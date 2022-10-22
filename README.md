@@ -1,1 +1,1 @@
-# R Shiny-app innehållande enkel regression för kvantitativ metodstudenterna
+R Shiny-app innehållande enkel regression för kvantitativ metodstudenterna
