@@ -4,7 +4,6 @@ library(dplyr)
 library(plotly)
 library(rmarkdown)
 library(knitr)
-library(pander)
 library(faux)
 library(DT)
 
