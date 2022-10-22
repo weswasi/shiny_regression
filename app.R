@@ -74,7 +74,7 @@ server <- function(input, output, session) {
                 mu = c(30, 60),
                 sd = c(5, 10),
                 r = input$samband, 
-                varnames = c("Age", "Safety"),
+                varnames = c("Ålder", "Trygghet"),
                 empirical = FALSE,
                 set.seed(input$gruppid))  %>% 
       mutate_if(is.numeric, round)
@@ -87,14 +87,15 @@ server <- function(input, output, session) {
       need(input$gruppid, "")
     )
     
-    p <- ggplot(safety_data(), aes(x = Age, y = Safety)) +
+    p <- safety_data() %>% 
+      ggplot(aes(x = Ålder, y = Trygghet)) +
       geom_point() +
       {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)} +
       scale_x_continuous(breaks = seq(0, 45, by = 1), limits = c(0, 45), expand = c(0,0)) +
       scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
       xlab("Ålder") +
       ylab("Upplevd trygghet")
-      theme_gray()
+    theme_gray()
     
     ggplotly(p)
   })
@@ -144,8 +145,6 @@ server <- function(input, output, session) {
     )
     
     safety_data() %>% 
-      rename("Ålder" = Age,
-             "Trygghet" = Safety) %>% 
       datatable(extensions = "Buttons",
                 rownames= FALSE,
                 options = list(
