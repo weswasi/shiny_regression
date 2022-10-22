@@ -52,6 +52,15 @@ ui <- shiny::tagList(
       )
     )
   ), 
+  
+  tags$footer(
+    tags$div(
+      class = "footer_container", 
+      
+      includeHTML(path = "www/html/footer.html")
+    )
+  )
+  
 )
 
 server <- function(input, output, session) {
@@ -60,8 +69,6 @@ server <- function(input, output, session) {
     split <- strsplit(text, ",", fixed = FALSE)[[1]]
     as.numeric(split)
   }
-  
-  
   
   safety_data <- reactive({
     rnorm_multi(n = 200, 
