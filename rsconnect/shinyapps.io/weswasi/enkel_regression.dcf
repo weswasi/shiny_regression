@@ -5,9 +5,9 @@ account: weswasi
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7386825
-bundleId: 6431753
+bundleId: 6431765
 url: https://weswasi.shinyapps.io/enkel_regression/
-when: 1666529699.0766
-lastSyncTime: 1666529699.07667
+when: 1666530072.00803
+lastSyncTime: 1666530072.00807
 asMultiple: FALSE
 asStatic: FALSE

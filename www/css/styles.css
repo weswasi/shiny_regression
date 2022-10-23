@@ -2,6 +2,12 @@ body {
     font-size: 20px;
 }
 
+div.MathJax_Display{
+   color: black;
+   text-align: left !important
+   
+}
+
 .help-block {
     font-size: 20px !important;
 }
