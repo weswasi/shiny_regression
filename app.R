@@ -29,7 +29,7 @@ ui <- shiny::tagList(
         sidebarPanel(
           selectInput("gruppid", 
                       label = strong("Grupp-ID"),
-                      width = "15%",
+                      width = "20%",
                       choices = list(
                         "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
                         "12", "13", "13", "14", "15", "16", "17", "18", "19", "20")),
@@ -125,14 +125,13 @@ server <- function(input, output, session) {
       x <- safety_data()[,2]
       fit <- lm(x ~ y)
       safety_data <- safety_data() %>%  
-        mutate(predicted = predict(fit),
-               residuals = residuals(fit))
+        mutate(`Predicerad trygghet` = round(predict(fit), 2))
       
       p <- safety_data %>% 
         ggplot(aes(x = Ålder, y = Trygghet)) +
         geom_point() +
         {if (input$avg) geom_hline(yintercept = mean(safety_data$Trygghet), linetype = "dashed", color = "gray50")} +
-        {if (input$resid) geom_segment(aes(xend = Ålder, yend = predicted), alpha = .2)} + 
+        {if (input$resid) geom_segment(aes(xend = Ålder, yend = `Predicerad trygghet`), alpha = .2)} + 
         {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)} +
         scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0)) +
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
@@ -144,14 +143,13 @@ server <- function(input, output, session) {
       x <- safety_data_outlier()[,2]
       fit <- lm(x ~ y)
       safety_data_outlier <- safety_data_outlier() %>%  
-        mutate(predicted = predict(fit),
-               residuals = residuals(fit))
+        mutate(`Predicerad trygghet` = round(predict(fit), 2))
       
       p <- safety_data_outlier %>% 
         ggplot(aes(x = Ålder, y = Trygghet)) +
         geom_point(aes(colour = factor(Outlier))) +
         {if (input$avg) geom_hline(yintercept = mean(safety_data_outlier$Trygghet), linetype = "dashed", color = "gray50")} +
-        {if (input$resid) geom_segment(aes(xend = Ålder, yend = predicted), alpha = .2)} + 
+        {if (input$resid) geom_segment(aes(xend = Ålder, yend = `Predicerad trygghet`), alpha = .2)} + 
         {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)} +
         scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0)) +
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
