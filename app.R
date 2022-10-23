@@ -42,6 +42,7 @@ ui <- shiny::tagList(
           checkboxInput("avg", "Visa genomsnittlig trygghet", FALSE),
           checkboxInput("line", "Anpassa en regressionslinje", FALSE),
           checkboxInput("resid", "Visa residualer", FALSE),
+          checkboxInput("dummy", "Ålder som dummyvariabel (0 om <=29 år och 1 om >=30 år)", FALSE),
           checkboxInput("outlier", "Introducera extremvärden", FALSE)
         ),
         
@@ -54,6 +55,7 @@ ui <- shiny::tagList(
           tags$b("Statistisk modell:"),
           br(),
           helpText("$$Y_{trygghet} = b_0 + b_{ålder}$$"),
+          br(),
           tags$b("Regressionsvärden från diagrammet:"),
           uiOutput("results"),
           br(),
@@ -127,13 +129,17 @@ server <- function(input, output, session) {
       safety_data <- safety_data() %>%  
         mutate(`Predicerad trygghet` = round(predict(fit), 2))
       
+      {if (input$dummy) safety_data <- safety_data %>% 
+          mutate(Ålder = ifelse(Ålder > 29, 1, 0))} 
+      
       p <- safety_data %>% 
         ggplot(aes(x = Ålder, y = Trygghet)) +
         geom_point() +
         {if (input$avg) geom_hline(yintercept = mean(safety_data$Trygghet), linetype = "dashed", color = "gray50")} +
         {if (input$resid) geom_segment(aes(xend = Ålder, yend = `Predicerad trygghet`), alpha = .2)} + 
         {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)} +
-        scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0)) +
+        {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0))} +
+        {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(-2, 3), expand = c(0,0))} +
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
         ylab("Upplevd trygghet")
     }
@@ -145,50 +151,23 @@ server <- function(input, output, session) {
       safety_data_outlier <- safety_data_outlier() %>%  
         mutate(`Predicerad trygghet` = round(predict(fit), 2))
       
+      {if (input$dummy) safety_data_outlier <- safety_data_outlier %>% 
+          mutate(Ålder = ifelse(Ålder > 29, 1, 0))} 
+      
       p <- safety_data_outlier %>% 
         ggplot(aes(x = Ålder, y = Trygghet)) +
         geom_point(aes(colour = factor(Outlier))) +
         {if (input$avg) geom_hline(yintercept = mean(safety_data_outlier$Trygghet), linetype = "dashed", color = "gray50")} +
         {if (input$resid) geom_segment(aes(xend = Ålder, yend = `Predicerad trygghet`), alpha = .2)} + 
         {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)} +
-        scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0)) +
+        {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0))} +
+        {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(-2, 3), expand = c(0,0))} +
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
         theme(legend.position = "none") +
         scale_color_manual(values=c("#000000", "#428bca")) +
         ylab("Upplevd trygghet")
     }
     ggplotly(p)
-  })
-  
-  output$data <- renderUI({
-    
-    validate(
-      need(input$gruppid, "")
-    )
-    
-    if (input$outlier == FALSE) {
-      y <- safety_data()[,2]
-      x <- safety_data()[,1]
-      withMathJax(
-        paste0("\\(\\bar{x} =\\) ", round(mean(x), 2)),
-        br(),
-        paste0("\\(\\bar{y} =\\) ", round(mean(y), 2)),
-        br(),
-        paste0("\\(n =\\) ", length(x))
-      )
-    }
-    
-    else {
-      y <- safety_data_outlier()[,2]
-      x <- safety_data_outlier()[,1]
-      withMathJax(
-        paste0("\\(\\bar{x} =\\) ", round(mean(x), 2)),
-        br(),
-        paste0("\\(\\bar{y} =\\) ", round(mean(y), 2)),
-        br(),
-        paste0("\\(n =\\) ", length(x))
-      )
-    }
   })
   
   output$results <- renderUI({
@@ -198,8 +177,14 @@ server <- function(input, output, session) {
     )
     
     if (input$outlier == FALSE) {
-      y <- safety_data()[,1]
-      x <- safety_data()[,2]
+      
+      safety_data <- safety_data()
+      
+      {if (input$dummy) safety_data <- safety_data() %>% 
+          mutate(Ålder = ifelse(Ålder > 29, 1, 0))} 
+      
+      y <- safety_data[,1]
+      x <- safety_data[,2]
       fit <- lm(x ~ y)
       withMathJax(
         paste0("\\( R^2 = \\) ", round(summary(fit)$r.squared, 2)),
@@ -214,8 +199,14 @@ server <- function(input, output, session) {
     }
     
     else {
-      y <- safety_data_outlier()[,1]
-      x <- safety_data_outlier()[,2]
+      
+      safety_data_outlier <- safety_data_outlier()
+      
+      {if (input$dummy) safety_data_outlier <- safety_data_outlier %>% 
+          mutate(Ålder = ifelse(Ålder > 29, 1, 0))} 
+      
+      y <- safety_data_outlier[,1]
+      x <- safety_data_outlier[,2]
       fit <- lm(x ~ y)
       withMathJax(
         paste0("\\( R^2 = \\) ", round(summary(fit)$r.squared, 2)),
@@ -226,6 +217,49 @@ server <- function(input, output, session) {
         br(),
         paste0("P-värde ", "\\( = \\) ",  
                ifelse(signif(summary(fit)$coef[2, 4], 3) < 0.001, "< 0.001", signif(summary(fit)$coef[2, 4], 2)))
+      )
+    }
+  })
+  
+  output$data <- renderUI({
+    
+    validate(
+      need(input$gruppid, "")
+    )
+    
+    if (input$outlier == FALSE) {
+      
+      safety_data <- safety_data()
+      
+      {if (input$dummy) safety_data <- safety_data() %>% 
+          mutate(Ålder = ifelse(Ålder > 29, 1, 0))} 
+
+      y <- safety_data[,2]
+      x <- safety_data[,1]
+      withMathJax(
+        paste0("\\(\\bar{x} =\\) ", round(mean(x), 2)),
+        br(),
+        paste0("\\(\\bar{y} =\\) ", round(mean(y), 2)),
+        br(),
+        paste0("\\(n =\\) ", length(x))
+      )
+    }
+    
+    else {
+      
+      safety_data_outlier <- safety_data_outlier()
+      
+      {if (input$dummy) safety_data_outlier <- safety_data_outlier %>% 
+          mutate(Ålder = ifelse(Ålder > 29, 1, 0))} 
+      
+      y <- safety_data_outlier[,2]
+      x <- safety_data_outlier[,1]
+      withMathJax(
+        paste0("\\(\\bar{x} =\\) ", round(mean(x), 2)),
+        br(),
+        paste0("\\(\\bar{y} =\\) ", round(mean(y), 2)),
+        br(),
+        paste0("\\(n =\\) ", length(x))
       )
     }
   })
@@ -237,7 +271,13 @@ server <- function(input, output, session) {
     )
     
     if (input$outlier == FALSE) {
-      safety_data() %>% 
+      
+      safety_data <- safety_data()
+      
+      {if (input$dummy) safety_data <- safety_data() %>% 
+          mutate(Ålder = ifelse(Ålder > 29, 1, 0))} 
+      
+      safety_data %>% 
         datatable(extensions = "Buttons",
                   rownames= FALSE,
                   options = list(
@@ -249,7 +289,13 @@ server <- function(input, output, session) {
     }
     
     else {
-      safety_data_outlier() %>% 
+      
+      safety_data_outlier <- safety_data_outlier()
+      
+      {if (input$dummy) safety_data_outlier <- safety_data_outlier %>% 
+          mutate(Ålder = ifelse(Ålder > 29, 1, 0))} 
+      
+      safety_data_outlier %>% 
         datatable(extensions = "Buttons",
                   rownames= FALSE,
                   options = list(
