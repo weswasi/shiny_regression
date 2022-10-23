@@ -32,6 +32,7 @@ ui <- shiny::tagList(
                       value = 0, step = 0.1),
           textInput("gruppid", "Grupp-ID", value = "1", placeholder = "Mata in grupp-ID"),
           checkboxInput("line", "Anpassa en regressionslinje", FALSE),
+          checkboxInput("outlier", "Sabba sambadet!", FALSE)
         ),
         
         mainPanel(
@@ -78,6 +79,19 @@ server <- function(input, output, session) {
                 empirical = FALSE,
                 set.seed(input$gruppid))  %>% 
       mutate_if(is.numeric, round)
+    
+    
+  })
+  
+  safety_data_outlier <- reactive({
+    safety_data() %>% 
+      add_row(Ålder = 
+                ifelse(input$samband > 0, 1, 63),
+              Trygghet = 110) %>% 
+      add_row(Ålder = 
+                ifelse(input$samband > 0, 2, 60),
+              Trygghet = 100) %>% 
+      mutate(Outlier = ifelse(Ålder == 63 | Ålder == 60 | Ålder == 1 | Ålder == 2, 1, 0))
   })
   
   # Data output
@@ -87,15 +101,27 @@ server <- function(input, output, session) {
       need(input$gruppid, "")
     )
     
+    if (input$outlier == FALSE) {
     p <- safety_data() %>% 
       ggplot(aes(x = Ålder, y = Trygghet)) +
       geom_point() +
       {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)} +
-      scale_x_continuous(breaks = seq(0, 45, by = 1), limits = c(0, 45), expand = c(0,0)) +
+      scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0)) +
       scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
-      xlab("Ålder") +
       ylab("Upplevd trygghet")
-    theme_gray()
+    theme_gray() }
+    
+    else {
+      p <- safety_data_outlier() %>% 
+        ggplot(aes(x = Ålder, y = Trygghet)) +
+        geom_point(aes(colour = Outlier)) +
+        {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)} +
+        scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0)) +
+        scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
+        theme(legend.position = "none")
+        ylab("Upplevd trygghet")
+      theme_gray() 
+    }
     
     ggplotly(p)
   })
@@ -106,6 +132,7 @@ server <- function(input, output, session) {
       need(input$gruppid, "")
     )
     
+    if (input$outlier == FALSE) {
     y <- safety_data()[,2]
     x <- safety_data()[,1]
     withMathJax(
@@ -115,6 +142,20 @@ server <- function(input, output, session) {
       br(),
       paste0("\\(n =\\) ", length(x))
     )
+    }
+    
+    else {
+    y <- safety_data_outlier()[,2]
+    x <- safety_data_outlier()[,1]
+    withMathJax(
+      paste0("\\(\\bar{x} =\\) ", round(mean(x), 3)),
+      br(),
+      paste0("\\(\\bar{y} =\\) ", round(mean(y), 3)),
+      br(),
+      paste0("\\(n =\\) ", length(x))
+    )
+    }
+    
   })
   
   
@@ -124,6 +165,7 @@ server <- function(input, output, session) {
       need(input$gruppid, "")
     )
     
+    if (input$outlier == FALSE) {
     y <- safety_data()[,1]
     x <- safety_data()[,2]
     fit <- lm(x ~ y)
@@ -136,6 +178,23 @@ server <- function(input, output, session) {
       br(),
       paste0("P-värde ", "\\( = \\) ",  ifelse(signif(summary(fit)$coef[2, 4], 3) < 0.001, "< 0.001", signif(summary(fit)$coef[2, 4], 3)))
     )
+    }
+    
+    else {
+    y <- safety_data_outlier()[,1]
+    x <- safety_data_outlier()[,2]
+    fit <- lm(x ~ y)
+    withMathJax(
+      paste0("Adj. \\( R^2 = \\) ", round(summary(fit)$adj.r.squared, 3)),
+      br(),
+      paste0("\\( \\beta_0 = \\) ", round(fit$coef[[1]], 3)),
+      br(),
+      paste0("\\( \\beta_1 = \\) ", round(fit$coef[[2]], 3)),
+      br(),
+      paste0("P-värde ", "\\( = \\) ",  ifelse(signif(summary(fit)$coef[2, 4], 3) < 0.001, "< 0.001", signif(summary(fit)$coef[2, 4], 3)))
+    )
+    }
+    
   })
   
   output$tbl <- renderDataTable({
@@ -144,15 +203,30 @@ server <- function(input, output, session) {
       need(input$gruppid, "")
     )
     
+    if (input$outlier == FALSE) {
     safety_data() %>% 
       datatable(extensions = "Buttons",
                 rownames= FALSE,
                 options = list(
                   lengthChange = FALSE,
                   dom = "Blfrtip",
-                  buttons = list(list(extend = "csv", text = "Ladda ner dataset"))
+                  buttons = list(list(extend = "csv", text = "Ladda ner datamaterialet"))
                 )
       )
+    }
+    
+    else {
+      safety_data_outlier() %>% 
+      datatable(extensions = "Buttons",
+                rownames= FALSE,
+                options = list(
+                  lengthChange = FALSE,
+                  dom = "Blfrtip",
+                  buttons = list(list(extend = "csv", text = "Ladda ner datamaterialet"))
+                )
+      )
+    }
+    
   })
 }
 
