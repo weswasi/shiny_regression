@@ -101,7 +101,7 @@ server <- function(input, output, session) {
     safety_data() %>% 
       add_row(Ålder = 
                 ifelse(input$samband > 0, 1, 63),
-              Trygghet = 110) %>% 
+              Trygghet = 100) %>% 
       add_row(Ålder = 
                 ifelse(input$samband > 0, 2, 60),
               Trygghet = 100) %>% 
