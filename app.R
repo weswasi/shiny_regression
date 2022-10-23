@@ -39,8 +39,10 @@ ui <- shiny::tagList(
           sliderInput("observationer", "Observationer:",
                       min = 10, max = 1000,
                       value = 200, step = 10),
+          checkboxInput("avg", "Visa genomsnittlig trygghet", FALSE),
           checkboxInput("line", "Anpassa en regressionslinje", FALSE),
-          checkboxInput("outlier", "Sabba sambandet", FALSE)
+          checkboxInput("resid", "Visa residualer", FALSE),
+          checkboxInput("outlier", "Introducera extremvärden", FALSE)
         ),
         
         # Main page
@@ -91,9 +93,8 @@ server <- function(input, output, session) {
                 r = input$samband, 
                 varnames = c("Ålder", "Trygghet"),
                 empirical = FALSE,
-                set.seed(input$gruppid))  %>% 
-      mutate_if(is.numeric, round)
-    
+                set.seed(input$gruppid)) %>% 
+      mutate_if(is.numeric, round, 1)
     
   })
   
@@ -120,9 +121,18 @@ server <- function(input, output, session) {
     )
     
     if (input$outlier == FALSE) {
-      p <- safety_data() %>% 
+      y <- safety_data()[,1]
+      x <- safety_data()[,2]
+      fit <- lm(x ~ y)
+      safety_data <- safety_data() %>%  
+        mutate(predicted = predict(fit),
+               residuals = residuals(fit))
+      
+      p <- safety_data %>% 
         ggplot(aes(x = Ålder, y = Trygghet)) +
-        geom_jitter() +
+        geom_point() +
+        {if (input$avg) geom_hline(yintercept = mean(safety_data$Trygghet), linetype = "dashed", color = "gray50")} +
+        {if (input$resid) geom_segment(aes(xend = Ålder, yend = predicted), alpha = .2)} + 
         {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)} +
         scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0)) +
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
@@ -130,9 +140,18 @@ server <- function(input, output, session) {
     }
     
     else {
-      p <- safety_data_outlier() %>% 
+      y <- safety_data_outlier()[,1]
+      x <- safety_data_outlier()[,2]
+      fit <- lm(x ~ y)
+      safety_data_outlier <- safety_data_outlier() %>%  
+        mutate(predicted = predict(fit),
+               residuals = residuals(fit))
+      
+      p <- safety_data_outlier %>% 
         ggplot(aes(x = Ålder, y = Trygghet)) +
-        geom_jitter(aes(colour = factor(Outlier))) +
+        geom_point(aes(colour = factor(Outlier))) +
+        {if (input$avg) geom_hline(yintercept = mean(safety_data_outlier$Trygghet), linetype = "dashed", color = "gray50")} +
+        {if (input$resid) geom_segment(aes(xend = Ålder, yend = predicted), alpha = .2)} + 
         {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)} +
         scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0)) +
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
@@ -140,7 +159,6 @@ server <- function(input, output, session) {
         scale_color_manual(values=c("#000000", "#428bca")) +
         ylab("Upplevd trygghet")
     }
-    
     ggplotly(p)
   })
   
@@ -154,9 +172,9 @@ server <- function(input, output, session) {
       y <- safety_data()[,2]
       x <- safety_data()[,1]
       withMathJax(
-        paste0("\\(\\bar{x} =\\) ", round(mean(x), 3)),
+        paste0("\\(\\bar{x} =\\) ", round(mean(x), 2)),
         br(),
-        paste0("\\(\\bar{y} =\\) ", round(mean(y), 3)),
+        paste0("\\(\\bar{y} =\\) ", round(mean(y), 2)),
         br(),
         paste0("\\(n =\\) ", length(x))
       )
@@ -166,16 +184,14 @@ server <- function(input, output, session) {
       y <- safety_data_outlier()[,2]
       x <- safety_data_outlier()[,1]
       withMathJax(
-        paste0("\\(\\bar{x} =\\) ", round(mean(x), 3)),
+        paste0("\\(\\bar{x} =\\) ", round(mean(x), 2)),
         br(),
-        paste0("\\(\\bar{y} =\\) ", round(mean(y), 3)),
+        paste0("\\(\\bar{y} =\\) ", round(mean(y), 2)),
         br(),
         paste0("\\(n =\\) ", length(x))
       )
     }
-    
   })
-  
   
   output$results <- renderUI({
     
@@ -188,14 +204,14 @@ server <- function(input, output, session) {
       x <- safety_data()[,2]
       fit <- lm(x ~ y)
       withMathJax(
-        paste0("\\( R^2 = \\) ", round(summary(fit)$r.squared, 3)),
+        paste0("\\( R^2 = \\) ", round(summary(fit)$r.squared, 2)),
         br(),
-        paste0("\\( \\beta_0 = \\) ", round(fit$coef[[1]], 3)),
+        paste0("\\( \\beta_0 = \\) ", round(fit$coef[[1]], 2)),
         br(),
-        paste0("\\( \\beta_å = \\) ", round(fit$coef[[2]], 3)),
+        paste0("\\( \\beta_å = \\) ", round(fit$coef[[2]], 2)),
         br(),
         paste0("P-värde ", "\\( = \\) ",  
-               ifelse(signif(summary(fit)$coef[2, 4], 3) < 0.001, "< 0.001", signif(summary(fit)$coef[2, 4], 3)))
+               ifelse(signif(summary(fit)$coef[2, 4], 3) < 0.001, "< 0.001", signif(summary(fit)$coef[2, 4], 2)))
       )
     }
     
@@ -204,17 +220,16 @@ server <- function(input, output, session) {
       x <- safety_data_outlier()[,2]
       fit <- lm(x ~ y)
       withMathJax(
-        paste0("\\( R^2 = \\) ", round(summary(fit)$r.squared, 3)),
+        paste0("\\( R^2 = \\) ", round(summary(fit)$r.squared, 2)),
         br(),
-        paste0("\\( \\beta_0 = \\) ", round(fit$coef[[1]], 3)),
+        paste0("\\( \\beta_0 = \\) ", round(fit$coef[[1]], 2)),
         br(),
-        paste0("\\( \\beta_å = \\) ", round(fit$coef[[2]], 3)),
+        paste0("\\( \\beta_å = \\) ", round(fit$coef[[2]], 2)),
         br(),
         paste0("P-värde ", "\\( = \\) ",  
-               ifelse(signif(summary(fit)$coef[2, 4], 3) < 0.001, "< 0.001", signif(summary(fit)$coef[2, 4], 3)))
+               ifelse(signif(summary(fit)$coef[2, 4], 3) < 0.001, "< 0.001", signif(summary(fit)$coef[2, 4], 2)))
       )
     }
-    
   })
   
   output$tbl <- renderDataTable({
