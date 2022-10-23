@@ -17,7 +17,7 @@ ui <- shiny::tagList(
       class = "app_title", 
       
       titlePanel(
-        title = "Enkel Regression - Metod II - Kriminologiska Institutionen", 
+        title = "Enkel Regression - Kriminologiska Institutionen", 
         windowTitle = "Enkel Regression"
       ),
     ),
