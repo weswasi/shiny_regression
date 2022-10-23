@@ -27,7 +27,12 @@ ui <- shiny::tagList(
       theme = shinythemes::shinytheme("flatly"),
       sidebarLayout(
         sidebarPanel(
-          textInput("gruppid", "Grupp-ID", value = "0", placeholder = "Mata in grupp-ID"),
+          selectInput("gruppid", 
+                      label = strong("Grupp-ID"),
+                      width = "15%",
+                      choices = list(
+                        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
+                        "12", "13", "13", "14", "15", "16", "17", "18", "19", "20")),
           sliderInput("samband", "Pearsons R:",
                       min = -0.99, max = 0.99,
                       value = 0, step = 0.1),
@@ -41,7 +46,7 @@ ui <- shiny::tagList(
         # Main page
         mainPanel(
           br(),
-          tags$b("Punktdiagram:"),
+          tags$b("Punktdiagram över ålder och upplevd trygghet:"),
           plotlyOutput("plot"),
           br(),
           tags$b("Statistisk modell:"),
