@@ -32,7 +32,7 @@ ui <- shiny::tagList(
                       value = 0, step = 0.1),
           textInput("gruppid", "Grupp-ID", value = "1", placeholder = "Mata in grupp-ID"),
           checkboxInput("line", "Anpassa en regressionslinje", FALSE),
-          checkboxInput("outlier", "Sabba sambadet!", FALSE)
+          checkboxInput("outlier", "Sabba sambadet", FALSE)
         ),
         
         mainPanel(
