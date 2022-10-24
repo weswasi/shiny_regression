@@ -29,7 +29,7 @@ ui <- shiny::tagList(
         sidebarPanel(
           selectInput("gruppid", 
                       label = strong("Grupp-ID"),
-                      width = "20%",
+                      width = "33%",
                       choices = list(
                         "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
                         "12", "13", "13", "14", "15", "16", "17", "18", "19", "20")),
@@ -42,7 +42,7 @@ ui <- shiny::tagList(
           checkboxInput("avg", "Visa genomsnittlig trygghet", FALSE),
           checkboxInput("line", "Anpassa en regressionslinje", FALSE),
           checkboxInput("resid", "Visa residualer", FALSE),
-          checkboxInput("dummy", "Ålder som dummyvariabel (0 om <=29 år och 1 om >=30 år)", FALSE),
+          checkboxInput("dummy", "Ålder som dummyvariabel (0 om <=29 år; 1 om >=30 år)", FALSE),
           checkboxInput("outlier", "Introducera extremvärden", FALSE)
         ),
         
@@ -139,7 +139,7 @@ server <- function(input, output, session) {
         {if (input$resid) geom_segment(aes(xend = Ålder, yend = `Predicerad trygghet`), alpha = .2)} + 
         {if (input$dummy == FALSE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)}} +
         {if (input$dummy == TRUE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = FALSE)}} +
-        {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0))} +
+        {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 5), limits = c(0, 65), expand = c(0,0))} +
         {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(-2, 3), expand = c(0,0))} +
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
         ylab("Upplevd trygghet")
@@ -162,7 +162,7 @@ server <- function(input, output, session) {
         {if (input$resid) geom_segment(aes(xend = Ålder, yend = `Predicerad trygghet`), alpha = .2)} + 
         {if (input$dummy == FALSE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)}} +
         {if (input$dummy == TRUE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = FALSE)}} +
-        {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 1), limits = c(0, 65), expand = c(0,0))} +
+        {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 5), limits = c(0, 65), expand = c(0,0))} +
         {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(-2, 3), expand = c(0,0))} +
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
         theme(legend.position = "none") +
