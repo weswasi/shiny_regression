@@ -37,13 +37,14 @@ ui <- shiny::tagList(
                       min = -0.99, max = 0.99,
                       value = 0, step = 0.1),
           sliderInput("observationer", "Observationer:",
-                      min = 10, max = 1000,
-                      value = 200, step = 10),
+                      min = 50, max = 1000,
+                      value = 100, step = 10),
           checkboxInput("avg", "Visa genomsnittlig trygghet", FALSE),
           checkboxInput("line", "Anpassa en regressionslinje", FALSE),
+          checkboxInput("ci", "Visa 95 % konfidensintervall", FALSE),
           checkboxInput("resid", "Visa residualer", FALSE),
-          checkboxInput("dummy", "Ålder som dummyvariabel (0 om <=29 år; 1 om >=30 år)", FALSE),
-          checkboxInput("outlier", "Introducera extremvärden", FALSE)
+          checkboxInput("outlier", "Introducera extremvärden", FALSE),
+          checkboxInput("dummy", "Ålder som dummyvariabel (0 om <=29 år; 1 om >=30 år)", FALSE)
         ),
         
         # Main page
@@ -137,8 +138,8 @@ server <- function(input, output, session) {
         geom_point() +
         {if (input$avg) geom_hline(yintercept = mean(safety_data$Trygghet), linetype = "dashed", color = "gray50")} +
         {if (input$resid) geom_segment(aes(xend = Ålder, yend = `Predicerad trygghet`), alpha = .2)} + 
-        {if (input$dummy == FALSE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)}} +
-        {if (input$dummy == TRUE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = FALSE)}} +
+        {if (input$dummy == FALSE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = input$ci, fill = "red", fullrange = TRUE)}} +
+        {if (input$dummy == TRUE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = input$ci, fill = "red", fullrange = FALSE)}} +
         {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 5), limits = c(0, 65), expand = c(0,0))} +
         {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(-2, 3), expand = c(0,0))} +
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
@@ -160,8 +161,8 @@ server <- function(input, output, session) {
         geom_point(aes(colour = factor(Outlier))) +
         {if (input$avg) geom_hline(yintercept = mean(safety_data_outlier$Trygghet), linetype = "dashed", color = "gray50")} +
         {if (input$resid) geom_segment(aes(xend = Ålder, yend = `Predicerad trygghet`), alpha = .2)} + 
-        {if (input$dummy == FALSE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = TRUE)}} +
-        {if (input$dummy == TRUE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = FALSE, fullrange = FALSE)}} +
+        {if (input$dummy == FALSE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = input$ci, fill = "red", fullrange = TRUE)}} +
+        {if (input$dummy == TRUE) {if (input$line) stat_smooth(method = "lm", colour="#e06666", se = input$ci, fill = "red", fullrange = FALSE)}} +
         {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 5), limits = c(0, 65), expand = c(0,0))} +
         {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(-2, 3), expand = c(0,0))} +
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
