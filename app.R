@@ -103,7 +103,9 @@ server <- function(input, output, session) {
                 varnames = c("Ålder", "Trygghet"),
                 empirical = FALSE,
                 set.seed(input$gruppid)) %>% 
-      mutate_if(is.numeric, round, 1)
+      mutate_if(is.numeric, round, 1) %>% 
+      mutate(Trygghet = round(Trygghet),
+             Ålder = round(Ålder))
     
   })
   
@@ -282,7 +284,7 @@ server <- function(input, output, session) {
     }
   })
   
-  output$tbl <- renderDataTable({
+  output$tbl <- renderDataTable(server = FALSE, {
     
     validate(
       need(input$gruppid, "")
@@ -299,11 +301,9 @@ server <- function(input, output, session) {
         datatable(extensions = "Buttons",
                   rownames= FALSE,
                   options = list(
-                    lengthChange = FALSE,
-                    dom = "Blfrtip",
-                    buttons = list(list(extend = "csv", text = "Ladda ner datasetet"))
-                  )
-        )
+                    dom = "Bfrtip",
+                    buttons = list(list(extend = "csv", text = "Ladda ner datasetet", exportOptions = list(
+                      modifier = list(page = "all"))))))
     }
     
     else {
@@ -317,11 +317,9 @@ server <- function(input, output, session) {
         datatable(extensions = "Buttons",
                   rownames= FALSE,
                   options = list(
-                    lengthChange = FALSE,
-                    dom = "Blfrtip",
-                    buttons = list(list(extend = "csv", text = "Ladda ner datasetet"))
-                  )
-        )
+                    dom = "Bfrtip",
+                    buttons = list(list(extend = "csv", text = "Ladda ner datasetet", exportOptions = list(
+                      modifier = list(page = "all"))))))
     }
     
   })
