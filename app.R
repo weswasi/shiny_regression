@@ -43,7 +43,8 @@ ui <- shiny::tagList(
                        ,"Anpassa en regressionslinje"
                        ,c("Ingen linje" = "lm_no",
                           "Regressionslinje" = "lm",
-                          "Regressionslinje med 95 % konfidensintervall" = "lm_95")
+                          "Regressionslinje med 95 % konfidensintervall" = "lm_95",
+                          "Regressionslinje med 99 % konfidensintervall" = "lm_99")
                        ,selected = "lm_no"
                        ,inline = FALSE),
           tags$b("Övrigt"),
@@ -151,6 +152,8 @@ server <- function(input, output, session) {
         {if (input$dummy == TRUE) {if  (input$regline == "lm") stat_smooth(method = "lm", se = FALSE, fullrange = FALSE)}} +
         {if (input$dummy == FALSE) {if (input$regline == "lm_95") stat_smooth(method = "lm", se = TRUE, fullrange = TRUE)}} +
         {if (input$dummy == TRUE) {if (input$regline == "lm_95") stat_smooth(method = "lm", se = TRUE, fullrange = FALSE)}} +
+        {if (input$dummy == FALSE) {if (input$regline == "lm_99") stat_smooth(method = "lm", se = TRUE, level = .99,  fullrange = TRUE)}} +
+        {if (input$dummy == TRUE) {if (input$regline == "lm_99") stat_smooth(method = "lm", se = TRUE, level = .99, fullrange = FALSE)}} +
         
         {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 5), limits = c(0, 65), expand = c(0,0))} +
         {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(-2, 3), expand = c(0,0))} +
@@ -179,6 +182,8 @@ server <- function(input, output, session) {
         {if (input$dummy == TRUE) {if  (input$regline == "lm") stat_smooth(method = "lm", se = FALSE, fullrange = FALSE)}} +
         {if (input$dummy == FALSE) {if (input$regline == "lm_95") stat_smooth(method = "lm", se = TRUE, fullrange = TRUE)}} +
         {if (input$dummy == TRUE) {if (input$regline == "lm_95") stat_smooth(method = "lm", se = TRUE, fullrange = FALSE)}} +
+        {if (input$dummy == FALSE) {if (input$regline == "lm_99") stat_smooth(method = "lm", se = TRUE, level = .99,  fullrange = TRUE)}} +
+        {if (input$dummy == TRUE) {if (input$regline == "lm_99") stat_smooth(method = "lm", se = TRUE, level = .99, fullrange = FALSE)}} +
         
         {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 5), limits = c(0, 65), expand = c(0,0))} +
         {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(-2, 3), expand = c(0,0))} +
