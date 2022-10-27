@@ -62,7 +62,7 @@ ui <- shiny::tagList(
           br(),
           tags$b("Statistisk modell:"),
           br(),
-          helpText("$$Y_{trygghet} = b_0 + b_1$$"),
+          helpText("$$Y_{trygghet} = b_0 + b_{ålder}$$"),
           br(),
           tags$b("Regressionsvärden från diagrammet:"),
           uiOutput("results"),
@@ -216,7 +216,7 @@ server <- function(input, output, session) {
         br(),
         paste0("\\( \\beta_0 = \\) ", round(fit$coef[[1]], 2)),
         br(),
-        paste0("\\( \\beta_1 = \\) ", round(fit$coef[[2]], 2)),
+        paste0("\\( \\beta_{ålder} = \\) ", round(fit$coef[[2]], 2)),
         br(),
         paste0("P-värde ", "\\( = \\) ",  
                ifelse(signif(summary(fit)$coef[2, 4], 3) < 0.001, "< 0.001", signif(summary(fit)$coef[2, 4], 2)))
@@ -238,7 +238,7 @@ server <- function(input, output, session) {
         br(),
         paste0("\\( \\beta_0 = \\) ", round(fit$coef[[1]], 2)),
         br(),
-        paste0("\\( \\beta_1 = \\) ", round(fit$coef[[2]], 2)),
+        paste0("\\( \\beta_{ålder} = \\) ", round(fit$coef[[2]], 2)),
         br(),
         paste0("P-värde ", "\\( = \\) ",  
                ifelse(signif(summary(fit)$coef[2, 4], 3) < 0.001, "< 0.001", signif(summary(fit)$coef[2, 4], 2)))
