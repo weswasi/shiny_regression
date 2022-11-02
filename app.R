@@ -156,7 +156,7 @@ server <- function(input, output, session) {
         {if (input$dummy == TRUE) {if (input$regline == "lm_99") stat_smooth(method = "lm", se = TRUE, level = .99, fullrange = FALSE)}} +
         
         {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 5), limits = c(0, 65), expand = c(0,0))} +
-        {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(-2, 3), expand = c(0,0))} +
+        {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(0, 65), expand = c(0,0))} +
 
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
         ylab("Upplevd trygghet")
@@ -186,7 +186,8 @@ server <- function(input, output, session) {
         {if (input$dummy == TRUE) {if (input$regline == "lm_99") stat_smooth(method = "lm", se = TRUE, level = .99, fullrange = FALSE)}} +
         
         {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 5), limits = c(0, 65), expand = c(0,0))} +
-        {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(-2, 3), expand = c(0,0))} +
+        {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(0, 65), expand = c(0,0))} +
+        
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
         theme(legend.position = "none") +
         scale_color_manual(values=c("#000000", "#e06666")) +
