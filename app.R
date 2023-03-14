@@ -11,7 +11,6 @@ library(DT)
 ui <- shiny::tagList(
   withMathJax(), 
   includeCSS(path = "www/css/styles.css"), 
-  
   tags$div(
     tags$div(
       class = "app_title", 
@@ -27,12 +26,6 @@ ui <- shiny::tagList(
       theme = shinythemes::shinytheme("flatly"),
       sidebarLayout(
         sidebarPanel(
-          selectInput("gruppid", 
-                      label = strong("Grupp-ID"),
-                      width = "33%",
-                      choices = list(
-                        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", 
-                        "12", "13", "13", "14", "15", "16", "17", "18", "19", "20")),
           sliderInput("samband", "Pearsons R",
                       min = -0.99, max = 0.99,
                       value = 0, step = 0.1),
@@ -76,16 +69,13 @@ ui <- shiny::tagList(
         )
       )
     )
-  ), 
-  
+  ),
   tags$footer(
     tags$div(
       class = "footer_container", 
-      
       includeHTML(path = "www/html/footer.html")
     )
   )
-  
 )
 
 # Server
@@ -103,11 +93,10 @@ server <- function(input, output, session) {
                 r = input$samband, 
                 varnames = c("Ålder", "Trygghet"),
                 empirical = FALSE,
-                set.seed(input$gruppid)) %>% 
+                set.seed(666)) %>% 
       mutate_if(is.numeric, round, 1) %>% 
       mutate(Trygghet = round(Trygghet),
              Ålder = round(Ålder))
-    
   })
   
   safety_data_outlier <- reactive({
@@ -127,11 +116,6 @@ server <- function(input, output, session) {
   
   # Data output
   output$plot <- renderPlotly({
-    
-    validate(
-      need(input$gruppid, "")
-    )
-    
     if (input$outlier == FALSE) {
       y <- safety_data()[,1]
       x <- safety_data()[,2]
@@ -157,7 +141,7 @@ server <- function(input, output, session) {
         
         {if (input$dummy == FALSE) scale_x_continuous(breaks = seq(0, 65, by = 5), limits = c(0, 65), expand = c(0,0))} +
         {if (input$dummy == TRUE) scale_x_continuous(breaks = seq(0, 1, by = 1), limits = c(0, 65), expand = c(0,0))} +
-
+        
         scale_y_continuous(breaks = seq(0, 120, by = 10), limits = c(0, 120, expand = c(0,0))) +
         ylab("Upplevd trygghet")
     }
@@ -197,10 +181,6 @@ server <- function(input, output, session) {
   })
   
   output$results <- renderUI({
-    
-    validate(
-      need(input$gruppid, "")
-    )
     
     if (input$outlier == FALSE) {
       
@@ -249,10 +229,6 @@ server <- function(input, output, session) {
   
   output$data <- renderUI({
     
-    validate(
-      need(input$gruppid, "")
-    )
-    
     if (input$outlier == FALSE) {
       
       safety_data <- safety_data()
@@ -292,10 +268,6 @@ server <- function(input, output, session) {
   
   output$tbl <- renderDataTable(server = FALSE, {
     
-    validate(
-      need(input$gruppid, "")
-    )
-    
     if (input$outlier == FALSE) {
       
       safety_data <- safety_data()
@@ -327,7 +299,6 @@ server <- function(input, output, session) {
                     buttons = list(list(extend = "csv", text = "Ladda ner datasetet", exportOptions = list(
                       modifier = list(page = "all"))))))
     }
-    
   })
 }
 
