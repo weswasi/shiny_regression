@@ -92,7 +92,7 @@ server <- function(input, output, session) {
                 sd = c(5, 10),
                 r = input$samband, 
                 varnames = c("Ålder", "Trygghet"),
-                empirical = FALSE,
+                empirical = TRUE,
                 set.seed(666)) %>% 
       mutate_if(is.numeric, round, 1) %>% 
       mutate(Trygghet = round(Trygghet),
